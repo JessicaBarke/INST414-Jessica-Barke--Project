@@ -1,76 +1,117 @@
 from pathlib import Path
 import pandas as pd, numpy as np
 
-ROOT = Path.cwd()
-RAW, CLEAN, REPORTS = ROOT/"data"/"raw", ROOT/"data"/"clean", ROOT/"reports"
+ROOT   = Path.cwd()
+RAW    = ROOT/"data"/"raw"
+CLEAN  = ROOT/"data"/"clean"
+REPORT = ROOT/"reports"
 CLEAN.mkdir(parents=True, exist_ok=True)
+REPORT.mkdir(parents=True, exist_ok=True)
 
 log = []
-def add_log(x): print(x); log.append(x)
+def add(msg):
+    print(msg); log.append(msg)
 
-pri_raw = pd.read_csv(RAW / "social_media_addiction_vs_relationships.csv")
-add_log(f"Start N: {len(pri_raw)}")
+# --- load primary raw ---
+src = RAW / "social_media_addiction_vs_relationships.csv"
+df0 = pd.read_csv(src)
+add(f"Loaded raw: {src} | shape={df0.shape}")
+add("Raw columns: " + ", ".join(df0.columns))
 
+# === EXACT column names from YOUR dataset ===
 ALIASES = {
-    'hours_social_media':  ['Time spent on social media (hours)','hours_social_media','daily_usage_hours','time_spent_daily'],
-    'gpa':                 ['Grade','gpa','cgpa','academic_score'],
-    'study_hours':         ['study_hours','Study time (hours)','daily_study_hours','study_time'],
-    'sleep_hours':         ['Sleep (hours)','sleep_hours','sleep_time'],
-    'work_hours':          ['work_hours','employment_hours','weekly_work_hours'],
-    'platform_primary':    ['Most used platform','platform_primary','primary_platform','most_used_platform'],
+    "hours_social_media": ["Avg_Daily_Usage_Hours"],
+    "sleep_hours":        ["Sleep_Hours_Per_Night"],
+    "platform_primary":   ["Most_Used_Platform"],
+    "acad_impact":        ["Affects_Academic_Performance"],  # DV for Sprint 2
+    "addiction_score":    ["Addicted_Score"],
 }
-def pick(df, opts):
-    for c in opts:
-        if c in df.columns: return c
+
+def pick(df, names):
+    for n in names:
+        if n in df.columns: 
+            return n
     return None
-def to_num(s):
-    return pd.to_numeric(s.replace(r"[^0-9\.\-]", "", regex=True), errors="coerce") if s.dtype==object else pd.to_numeric(s, errors="coerce")
 
-out = pd.DataFrame()
-# numeric fields
-for k in ['hours_social_media','study_hours','sleep_hours','work_hours']:
-    col = pick(pri_raw, ALIASES[k]); out[k] = to_num(pri_raw[col]) if col else np.nan
+def to_num(series):
+    if series is None:
+        return pd.Series(np.nan, index=range(len(df0)))
+    if pd.api.types.is_numeric_dtype(series):
+        return pd.to_numeric(series, errors="coerce")
+    # extract numeric substring like "3.5 hrs", "~4"
+    extr = series.astype(str).str.extract(r"(-?\d+\.?\d*)", expand=False)
+    return pd.to_numeric(extr, errors="coerce")
 
-# GPA normalize to 0–4 /10 /100 fallback
-gcol = pick(pri_raw, ALIASES['gpa'])
-graw = to_num(pri_raw[gcol]) if gcol else pd.Series([np.nan]*len(pri_raw))
-if graw.dropna().quantile(0.95) <= 4.5:    g = graw.clip(0,4)
-elif graw.dropna().quantile(0.95) <= 10:  g = (graw/10*4).clip(0,4)
-elif graw.dropna().quantile(0.95) <= 100: g = (graw/100*4).clip(0,4)
-else:                                      g = (graw - graw.mean())/graw.std(ddof=0)
-out['gpa'] = g
+out = pd.DataFrame(index=df0.index)
 
-# categorical
-pcol = pick(pri_raw, ALIASES['platform_primary'])
-out['platform_primary'] = pri_raw[pcol] if pcol else pd.Series([np.nan]*len(pri_raw))
+# Map real columns -> standard names
+h_col = pick(df0, ALIASES["hours_social_media"])
+s_col = pick(df0, ALIASES["sleep_hours"])
+p_col = pick(df0, ALIASES["platform_primary"])
+y_col = pick(df0, ALIASES["acad_impact"])
+a_col = pick(df0, ALIASES["addiction_score"])
 
-# duplicates
-prev = len(out); out = out.drop_duplicates(); add_log(f"drop_duplicates removed: {prev-len(out)}")
+add(f"Map hours_social_media <- {h_col}")
+add(f"Map sleep_hours       <- {s_col}")
+add(f"Map platform_primary  <- {p_col}")
+add(f"Map acad_impact (DV)  <- {y_col}")
+add(f"Map addiction_score   <- {a_col}")
 
-# invalid values
-if 'hours_social_media' in out:
-    out.loc[(out['hours_social_media']<0)|(out['hours_social_media']>24),'hours_social_media'] = np.nan
+out["hours_social_media"] = to_num(df0[h_col]) if h_col else np.nan
+out["sleep_hours"]        = to_num(df0[s_col]) if s_col else np.nan
+out["platform_primary"]   = df0[p_col] if p_col else pd.Series(np.nan, index=df0.index)
+out["acad_impact"]        = to_num(df0[y_col]) if y_col else np.nan
+out["addiction_score"]    = to_num(df0[a_col]) if a_col else np.nan
 
-# median imputation
-for c in ['hours_social_media','gpa','sleep_hours','study_hours','work_hours']:
-    if c in out.columns: out[c] = out[c].fillna(out[c].median())
+# no GPA in this dataset (placeholder to keep scripts happy)
+out["gpa"] = np.nan
+
+# sanity bounds (don't drop rows)
+out.loc[(out["hours_social_media"]<0) | (out["hours_social_media"]>24), "hours_social_media"] = np.nan
+out.loc[(out["sleep_hours"]<0) | (out["sleep_hours"]>24), "sleep_hours"] = np.nan
+out.loc[(out["acad_impact"]<0), "acad_impact"] = np.nan
+
+# DO NOT drop duplicates yet (we'll inspect first)
+# prev = len(out); out = out.drop_duplicates(); add(f"drop_duplicates removed: {prev-len(out)}")
+
+# median impute only if we have at least one non-null
+for c in ["hours_social_media","sleep_hours","acad_impact","addiction_score"]:
+    if out[c].notna().any():
+        out[c] = out[c].fillna(out[c].median())
 
 # features
-cut = out['hours_social_media'].quantile(0.75)
-out['heavy_user'] = (out['hours_social_media'] >= cut).astype(int)
-out['sleep_ok']   = (out['sleep_hours'] >= 7).astype('Int64')
+if out["hours_social_media"].notna().any():
+    cut = out["hours_social_media"].quantile(0.75)
+    out["heavy_user"] = (out["hours_social_media"] >= cut).astype("Int64")
+else:
+    out["heavy_user"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
+
+if out["sleep_hours"].notna().any():
+    out["sleep_ok"] = (out["sleep_hours"] >= 7).astype("Int64")
+else:
+    out["sleep_ok"] = pd.Series(pd.NA, index=out.index, dtype="Int64")
 
 def map_platform(x):
-    if pd.isna(x): return 'Other'
+    if pd.isna(x): return "Other"
     s = str(x).lower()
-    if any(k in s for k in ['tiktok','short','reels','youtube shorts']): return 'Short-video'
-    if any(k in s for k in ['instagram','snap','pinterest']):            return 'Image-centric'
-    if any(k in s for k in ['linkedin','reddit','quora']):               return 'Professional/Forum'
-    return 'Other'
-out['platform_group'] = out['platform_primary'].map(map_platform)
+    if any(k in s for k in ["tiktok","short","reels","youtube"]): return "Short-video"
+    if any(k in s for k in ["instagram","insta","snap","pinterest"]): return "Image-centric"
+    if any(k in s for k in ["linkedin","reddit","quora","discord"]): return "Professional/Forum"
+    return "Other"
 
-# save
-out.to_csv(CLEAN / "primary_clean.csv", index=False)
-add_log(f"Saved data/clean/primary_clean.csv | N={len(out)}")
-with open(REPORTS / "cleaning_log.md","w") as f: f.write("\n".join(log))
-print("Wrote reports/cleaning_log.md")
+out["platform_group"] = out["platform_primary"].map(map_platform)
+
+# diagnostics BEFORE saving
+for c in ["hours_social_media","sleep_hours","acad_impact","addiction_score"]:
+    nz = int(out[c].notna().sum())
+    mean = float(out[c].dropna().mean()) if nz>0 else float("nan")
+    add(f"{c} non-null: {nz} | mean={mean:.3f}")
+
+dst = CLEAN / "primary_clean.csv"
+out.to_csv(dst, index=False)
+add(f"Saved {dst} | shape={out.shape}")
+
+with open(REPORT/"cleaning_log.md","w") as f:
+    f.write("\n".join(log))
+
+print("✅ Cleaning done. Check reports/cleaning_log.md")
