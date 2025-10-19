@@ -1,9 +1,13 @@
-Variable,Type,Description,Role,Present In
-gpa,Continuous,GPA or academic score (0–4 normalized),Dependent Variable,Primary
-hours_social_media,Continuous,Self-reported hours per day on social media,Independent Variable (Main),—
-platform_primary,Categorical,Most-used social media platform,Independent Variable,Primary
-sleep_hours,Continuous,Average nightly sleep duration (hours),Control Variable,Primary
-study_hours,Continuous,Average daily study time (hours),Control Variable,Primary
-work_hours,Continuous,Weekly paid work hours,Control Variable,Primary
-productivity_index,Continuous,Self-rated productivity or efficiency score,Secondary Outcome (Validation),—
-addiction_score,Continuous,Social media addiction/self-control index,Supplementary Variable,Primary
+Variable,Type,Description,Role,Present In,Missing %
+sleep_hours,Continuous,Average nightly sleep (hours),Control,Primary,0.0%
+addiction_score,Continuous,Addiction/self-control index,Control/Mechanism,Primary,0.0%
+acad_impact,Binary,Self-reported academic impact (Yes=1/No=0),Dependent Variable,Primary,0.0%
+sleep_ok,Binary,1 if sleep ≥ 7h,Derived/Control,Primary,0.0%
+heavy_user,Binary,1 if hours ≥ 75th pct,Derived/Moderator,Primary,0.0%
+platform_group,Categorical,Platform type (Short-video/Image-centric/Forum/Other),Independent,Primary,0.0%
+hours_social_media,Continuous,Daily social media hours,Independent (main),Primary,0.0%
+notifications,Continuous,Daily notifications,Control,Secondary,0.0%
+platform_pref,Categorical,Most-used platform (secondary),Control,Secondary,0.0%
+work_hours,Continuous,Work hours per day,Control,Secondary,0.0%
+prod_actual,Continuous,Actual productivity score,Dependent Variable,Secondary,7.9%
+prod_perceived,Continuous,Perceived productivity score,Dependent Variable,Secondary,5.4%
