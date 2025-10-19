@@ -63,3 +63,77 @@ if all(c in df.columns for c in ["heavy_user","sleep_ok","acad_impact"]):
     plt.savefig(FIGS/"fig6_group_means_ci.png"); plt.close()
 
 print("✅ EDA complete")
+# === OPTIONAL FIGURES: Missingness, Cleaning Pipeline, Addiction Histogram ===
+from pathlib import Path
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+FIGS = Path("reports/figures")
+FIGS.mkdir(parents=True, exist_ok=True)
+
+def plot_missingness(df, outpath=FIGS / "fig_missingness.png"):
+    miss = df.isna().mean().sort_values(ascending=False)
+    plt.figure(figsize=(8, 5))
+    miss.plot(kind="bar")
+    plt.ylabel("Fraction Missing")
+    plt.title("Missingness Overview by Variable")
+    plt.tight_layout()
+    plt.savefig(outpath, dpi=200)
+    plt.close()
+    try:
+        import missingno as msno  # optional
+        ax = msno.matrix(df, figsize=(8,4))
+        plt.title("Missingness Matrix (Optional)")
+        plt.tight_layout()
+        plt.savefig(FIGS / "fig_missing_matrix.png", dpi=200)
+        plt.close()
+    except Exception:
+        pass
+
+def draw_cleaning_flow(outpath=FIGS / "fig_cleaning_pipeline.png"):
+    steps = [
+        "Load raw CSVs (data/raw)",
+        "Rename columns (lower_snake_case)",
+        "Type conversion (numeric/categorical)",
+        "Impute missing (median/mode)",
+        "Winsorize top 1% outliers",
+        "Map Yes/No → acad_impact (0/1)",
+        "Drop exact duplicates",
+        "Export cleaned (data/clean)"
+    ]
+    plt.figure(figsize=(8, 6))
+    y = 1.0
+    for i, txt in enumerate(steps):
+        plt.gca().add_patch(plt.Rectangle((0.1, y-0.08), 0.8, 0.12, fill=False, linewidth=1.5))
+        plt.text(0.5, y-0.02, txt, ha="center", va="center")
+        if i < len(steps)-1:
+            plt.arrow(0.5, y-0.18, 0, -0.06, width=0.002, head_width=0.03,
+                      head_length=0.02, length_includes_head=True, fc="k", ec="k")
+        y -= 0.18
+    plt.axis("off")
+    plt.title("Data Cleaning Pipeline (Sprint 2)")
+    plt.tight_layout()
+    plt.savefig(outpath, dpi=200)
+    plt.close()
+
+def plot_addiction_hist(df, col="addiction_score", outpath=FIGS / "fig3_addiction_hist.png"):
+    if col in df.columns and df[col].notna().sum() > 0:
+        plt.figure(figsize=(8,5))
+        plt.hist(df[col].dropna(), bins=20, edgecolor="black")
+        plt.xlabel("Addiction Score")
+        plt.ylabel("Frequency")
+        plt.title("Distribution of Addiction Scores")
+        plt.tight_layout()
+        plt.savefig(outpath, dpi=200)
+        plt.close()
+
+# Generate for primary dataset
+try:
+    _primary = pd.read_csv("data/clean/primary_clean.csv")
+    plot_missingness(_primary)
+    draw_cleaning_flow()
+    plot_addiction_hist(_primary, "addiction_score")
+    print("Optional figures saved to reports/figures/")
+except FileNotFoundError:
+    print("⚠️ primary_clean.csv not found; run notebooks/02_cleaning_pipeline.py first.")
