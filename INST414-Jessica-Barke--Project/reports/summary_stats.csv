@@ -1,6 +1,5 @@
 ,count,mean,std,min,25%,50%,75%,max
-hours_social_media,0.0,,,,,,,
-gpa,0.0,,,,,,,
-sleep_hours,0.0,,,,,,,
-study_hours,0.0,,,,,,,
-work_hours,0.0,,,,,,,
+hours_social_media,705.0,4.919,1.257,1.5,4.1,4.8,5.8,8.5
+acad_impact,705.0,0.643,0.48,0.0,0.0,1.0,1.0,1.0
+sleep_hours,705.0,6.869,1.127,3.8,6.0,6.9,7.7,9.6
+addiction_score,705.0,6.437,1.587,2.0,5.0,7.0,8.0,9.0

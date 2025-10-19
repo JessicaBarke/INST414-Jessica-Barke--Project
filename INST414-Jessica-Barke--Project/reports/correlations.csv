@@ -1,6 +1,5 @@
-,hours_social_media,gpa,sleep_hours,study_hours,work_hours
-hours_social_media,,,,,
-gpa,,,,,
-sleep_hours,,,,,
-study_hours,,,,,
-work_hours,,,,,
+,hours_social_media,acad_impact,sleep_hours,addiction_score
+hours_social_media,1.0,0.661,-0.791,0.832
+acad_impact,0.661,1.0,-0.625,0.866
+sleep_hours,-0.791,-0.625,1.0,-0.765
+addiction_score,0.832,0.866,-0.765,1.0
