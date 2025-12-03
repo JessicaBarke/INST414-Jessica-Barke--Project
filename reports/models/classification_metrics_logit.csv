@@ -1,0 +1,5 @@
+model,accuracy,majority_class,precision,recall,f1,roc_auc,tn,fp,fn,tp
+baseline_majority_class,0.6425531914893617,1.0,,,,,,,,
+logit_full,1.0,,1.0,1.0,1.0,1.0,252.0,0.0,0.0,453.0
+logit_reduced,0.9858156028368794,,0.9846827133479212,0.9933774834437086,0.989010989010989,0.9987648481025965,245.0,7.0,3.0,450.0
+logit_train_test_split,1.0,,1.0,1.0,1.0,1.0,50.0,0.0,0.0,91.0

@@ -1,0 +1,26 @@
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            acad_impact   No. Observations:                  705
+Model:                          Logit   Df Residuals:                      696
+Method:                           MLE   Df Model:                            8
+Date:                Wed, 19 Nov 2025   Pseudo R-squ.:                  0.9385
+Time:                        12:23:07   Log-Likelihood:                -28.249
+converged:                      False   LL-Null:                       -459.61
+Covariance Type:            nonrobust   LLR p-value:                6.164e-181
+=====================================================================================================
+                                        coef    std err          z      P>|z|      [0.025      0.975]
+-----------------------------------------------------------------------------------------------------
+const                              -133.5719   1.43e+04     -0.009      0.993   -2.81e+04    2.79e+04
+hours_social_media                    0.5586      0.976      0.573      0.567      -1.354       2.471
+addiction_score                      22.7334   2379.780      0.010      0.992   -4641.551    4687.017
+sleep_hours                          -0.5082      0.842     -0.604      0.546      -2.158       1.141
+heavy_user                            7.0493   6.77e+05   1.04e-05      1.000   -1.33e+06    1.33e+06
+sleep_ok                              1.9102      1.248      1.530      0.126      -0.537       4.357
+platform_group_Other                 -2.7959      1.275     -2.192      0.028      -5.296      -0.296
+platform_group_Professional/Forum    -7.2386   7.94e+05  -9.11e-06      1.000   -1.56e+06    1.56e+06
+platform_group_Short-video           -1.5617      1.224     -1.276      0.202      -3.961       0.837
+=====================================================================================================
+
+Possibly complete quasi-separation: A fraction 0.91 of observations can be
+perfectly predicted. This might indicate that there is complete
+quasi-separation. In this case some parameters will not be identified.

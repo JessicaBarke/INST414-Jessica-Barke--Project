@@ -1,0 +1,23 @@
+                                Logit Regression Results                                
+========================================================================================
+Dep. Variable:     Affects_Academic_Performance   No. Observations:                  705
+Model:                                    Logit   Df Residuals:                      699
+Method:                                     MLE   Df Model:                            5
+Date:                          Tue, 02 Dec 2025   Pseudo R-squ.:                   1.000
+Time:                                  18:59:08   Log-Likelihood:             -0.0012036
+converged:                                 True   LL-Null:                       -459.61
+Covariance Type:                      nonrobust   LLR p-value:                1.836e-196
+===============================================================================================
+                                  coef    std err          z      P>|z|      [0.025      0.975]
+-----------------------------------------------------------------------------------------------
+const                          -2.3566   4.42e+07  -5.33e-08      1.000   -8.67e+07    8.67e+07
+Addicted_Score                 23.5764   1.11e+05      0.000      1.000   -2.17e+05    2.17e+05
+Avg_Daily_Usage_Hours          -5.8409    155.101     -0.038      0.970    -309.833     298.151
+Sleep_Hours_Per_Night           1.1518     64.928      0.018      0.986    -126.105     128.409
+Mental_Health_Score           -25.9495   6.32e+06  -4.11e-06      1.000   -1.24e+07    1.24e+07
+Conflicts_Over_Social_Media    23.9407    150.727      0.159      0.874    -271.480     319.361
+===============================================================================================
+
+Possibly complete quasi-separation: A fraction 1.00 of observations can be
+perfectly predicted. This might indicate that there is complete
+quasi-separation. In this case some parameters will not be identified.
